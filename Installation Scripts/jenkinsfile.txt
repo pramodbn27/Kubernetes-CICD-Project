@@ -1,0 +1,72 @@
+node{
+    stage("git checkout"){
+        git branch: 'main', url: 'https://github.com/MayuMore/Kubernetes-CICD-Project.git'
+    }
+    stage("sending files to ansible server"){
+        sshagent(['ansible_demo']) {
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74'
+            sh 'scp /var/lib/jenkins/workspace/kubernetes-pipeline/* ubuntu@10.0.1.74:/home/ubuntu'
+    
+        }
+    }
+    stage("Docker Imagebuilding"){
+        sshagent(['ansible_demo']) {
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74 cd /home/ubuntu'
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74 docker image build -t $JOB_NAME:v1.$BUILD_ID .'
+            
+    
+        }
+    }
+    
+    stage("Docker Image tagging"){
+        sshagent(['ansible_demo']) {
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74 cd /home/ubuntu'
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74 docker image tag $JOB_NAME:v1.$BUILD_ID mayuri2711/$JOB_NAME:v1.$BUILD_ID'
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74 docker image tag $JOB_NAME:v1.$BUILD_ID mayuri2711/$JOB_NAME:latest'
+            
+
+    
+        }
+    }
+    stage("push images to dockerhub"){
+        sshagent(['ansible_demo']) {
+            withCredentials([string(credentialsId: 'dockerhub_password', variable: 'dockerhub_password')]) {
+                 sh "ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74 docker login -u mayuri2711 -p ${dockerhub_password}"
+                 sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74 docker image push mayuri2711/$JOB_NAME:v1.$BUILD_ID'
+                 sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74 docker image push mayuri2711/$JOB_NAME:latest'
+
+                 sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74 docker image rm mayuri2711/$JOB_NAME:v1.$BUILD_ID mayuri2711/$JOB_NAME:latest $JOB_NAME:v1.$BUILD_ID'
+        
+                 
+            
+        }
+        
+        }
+    }
+    
+    stage("copy files from ansible to kubernetes server"){
+        sshagent(['kubernetes_server']) {
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.2.9'
+            sh 'scp /var/lib/jenkins/workspace/kubernetes-pipeline/* ubuntu@10.0.2.9:/home/ubuntu'
+    
+        }
+        
+    }
+    
+    stage("kubernetes deployment using ansible"){
+        sshagent(['ansible_demo']) {
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74 sudo su'
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74 cd /home/ubuntu'
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74 sudo ansible -m ping node'
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.74 sudo ansible-playbook ansible.yml'
+}
+        
+    }
+        
+
+
+}
+    
+        
+
+    

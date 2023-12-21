@@ -1,0 +1,14 @@
+kind: Service                             
+apiVersion: v1
+metadata:
+  name: kube-proj-mayuri2711
+  labels:
+    app: kube-proj-mayuri2711
+spec:
+  ports:
+    - port: 8080                               
+      targetPort: 80                    
+      nodePort: 31200
+  selector:
+    app: kube-proj-mayuri2711   
+  type: LoadBalancer                   

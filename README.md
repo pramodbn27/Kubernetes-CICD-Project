@@ -28,3 +28,20 @@ The container registry where Docker images are stored.
 ### 7) Kubernetes: 
 The container orchestration platform responsible for deploying and managing the application containers.
 
+## Prerequisites
+Before setting up the CI/CD pipeline, ensure you have the following prerequisites:
+
+1) A GitHub and dockerhub account
+2) EC2 instance no 1 :- Jenkins Installtion
+EC2 instance no 2:- Ansible, docker, kubernetes Installtion
+EC2 instance no 3:- Docker, Kubernetes installtion
+3) SSH Connection configuration between all three servers
+
+
+## Setup Instructions
+Follow these steps to set up the CI/CD pipeline:
+
+1) Clone the repository: https://github.com/pramodbn27/Kubernetes-CICD-Project.git
+2) Set three EC2 servers using terraform temaplates given in the Installtion_scripts Folder
+3) Configure the Jenkins job to listen for changes in the GitHub repository and trigger the build and deployment process. Set up the following stages:- a) git checkout b) sending files to ansible server c) Docker Imagebuilding d) Docker Image tagging e) push images to dockerhub f) copy files from ansible to kubernetes server g) kubernetes deployment using ansible
+5) Trigger the jobs to see the deployment.

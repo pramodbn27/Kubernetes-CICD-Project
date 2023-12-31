@@ -1,0 +1,20 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+   name: kube-proj-mayuri2711
+spec:
+   replicas: 2
+   selector:      # tells the controller which pods to watch/belong to
+    matchLabels:
+     app: kube-proj-mayuri2711
+   template:
+      metadata:
+        labels:
+          app: kube-proj-mayuri2711
+      spec:
+       containers:
+        - name: kube-proj-mayuri2711
+          image: mayuri2711/kubernetes-pipeline
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 80
